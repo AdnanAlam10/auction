@@ -1,9 +1,17 @@
-import { prisma } from "./lib/prisma.js";
+import express from "express";
+import { auctionsRouter } from "./routes/auctions.js";
 
-async function main() {
-  const count = await prisma.auction.count();
-  console.log(`hello from backend — ${count} auctions in db`);
-  await prisma.$disconnect();
-}
+const app = express();
 
-main();
+app.use(express.json());
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+app.use("/api/auctions", auctionsRouter);
+
+const PORT = Number(process.env.PORT ?? 3001);
+app.listen(PORT, () => {
+  console.log(`backend listening on :${PORT}`);
+});
