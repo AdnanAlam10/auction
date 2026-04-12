@@ -1,4 +1,9 @@
-import type { AuctionId } from "@shared/types";
+import { prisma } from "./lib/prisma.js";
 
-const id = "123" as AuctionId;
-console.log("hello from backend", id);
+async function main() {
+  const count = await prisma.auction.count();
+  console.log(`hello from backend — ${count} auctions in db`);
+  await prisma.$disconnect();
+}
+
+main();

@@ -7,15 +7,11 @@
     "types": ["node"],
     "outDir": "./dist",
     "rootDir": "..",
-    "paths": {
-      "@shared/*": ["../shared/*"]
-    },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "declaration": false,
     "sourceMap": true
   },
   "include": ["src/**/*", "../shared/**/*"],

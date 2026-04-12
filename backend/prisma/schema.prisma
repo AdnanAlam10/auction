@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuctionStatus {
+  pending
+  active
+  ended
+}
+
+model Auction {
+  id              String        @id @default(uuid()) @db.Uuid
+  title           String        @db.VarChar(200)
+  description     String?       @db.Text
+  imageUrl        String?       @map("image_url") @db.Text
+  startingBid     Int           @map("starting_bid")
+  currentBid      Int           @map("current_bid")
+  currentBidder   String?       @map("current_bidder") @db.VarChar(50)
+  currentBidderId String?       @map("current_bidder_id") @db.Uuid
+  minIncrement    Int           @default(100) @map("min_increment")
+  startsAt        DateTime      @map("starts_at") @db.Timestamptz
+  endsAt          DateTime      @map("ends_at") @db.Timestamptz
+  status          AuctionStatus @default(pending)
+  hostToken       String        @unique @default(uuid()) @map("host_token") @db.Uuid
+  winnerName      String?       @map("winner_name") @db.VarChar(50)
+  winnerAmount    Int?          @map("winner_amount")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  bids Bid[]
+
+  @@map("auctions")
+}
+
+model Bid {
+  id         String   @id @default(uuid()) @db.Uuid
+  auctionId  String   @map("auction_id") @db.Uuid
+  bidderName String   @map("bidder_name") @db.VarChar(50)
+  bidderId   String   @map("bidder_id") @db.Uuid
+  amount     Int
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  auction Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  @@index([auctionId, createdAt])
+  @@index([bidderId])
+  @@map("bids")
+}
