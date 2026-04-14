@@ -5,7 +5,7 @@ import type {
   ServerToClientEvents,
   ClientToServerEvents,
   AuctionStatePayload,
-} from "../../../socketEvents.js";
+} from "../../../shared/socketEvents.js";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 type ClientSocket = Socket<ClientToServerEvents, ServerToClientEvents>;

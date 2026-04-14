@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../lib/socket";
 import { getParticipantId } from "../lib/participant";
-import type { AuctionStatePayload, NewBidPayload } from "../../../socketEvents";
+import type { AuctionStatePayload, NewBidPayload } from "../../../shared/socketEvents";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
