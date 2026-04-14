@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/backend/src/index.js"
   },
   "keywords": [],
@@ -26,5 +26,8 @@
     "prisma": "^6.19.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
