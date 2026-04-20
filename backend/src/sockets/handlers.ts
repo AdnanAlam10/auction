@@ -10,6 +10,30 @@ import type {
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 type ClientSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
 
+interface AuctionSocketData {
+  auctionId?: string;
+  participantId?: string;
+  displayName?: string;
+}
+
+function getJoinedContext(socket: ClientSocket):
+  | (AuctionSocketData & {
+      auctionId: string;
+      participantId: string;
+      displayName: string;
+    })
+  | null {
+  const data = socket.data as AuctionSocketData;
+  if (!data.auctionId || !data.participantId || !data.displayName) {
+    return null;
+  }
+  return {
+    auctionId: data.auctionId,
+    participantId: data.participantId,
+    displayName: data.displayName,
+  };
+}
+
 function roomName(auctionId: string): string {
   return `auction:${auctionId}`;
 }
@@ -64,6 +88,16 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
       return;
     }
 
+    const previousCtx = getJoinedContext(socket);
+    if (previousCtx && previousCtx.auctionId !== auctionId) {
+      const previousRoom = roomName(previousCtx.auctionId);
+      await socket.leave(previousRoom);
+      setTimeout(() => {
+        const count = countInRoom(io, previousRoom);
+        io.to(previousRoom).emit("participant_count", { count });
+      }, 100);
+    }
+
     const room = roomName(auctionId);
     await socket.join(room);
 
@@ -105,11 +139,18 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
     const parsed = leaveAuctionSchema.safeParse(rawPayload);
     if (!parsed.success) return;
     const { auctionId } = parsed.data;
-    const room = roomName(auctionId);
 
+    const ctx = getJoinedContext(socket);
+    if (!ctx || ctx.auctionId !== auctionId) return;
+
+    const room = roomName(auctionId);
     socket.leave(room);
-    const count = countInRoom(io, room);
-    io.to(room).emit("participant_count", { count });
+    socket.data.auctionId = undefined;
+
+    setTimeout(() => {
+      const count = countInRoom(io, room);
+      io.to(room).emit("participant_count", { count });
+    }, 100);
   });
 
   socket.on("disconnect", () => {
