@@ -6,6 +6,10 @@ import type {
   ClientToServerEvents,
   AuctionStatePayload,
 } from "../../../shared/socketEvents.js";
+import { canBid, clearRateLimit } from "./rateLimit.js";
+import { placeBid } from "../services/bidService.js";
+import { BidError } from "../services/bidError.js";
+import { placeBidSchema } from "./validation.js";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 type ClientSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -84,7 +88,7 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
     });
 
     if (!auction) {
-      socket.emit("bid_rejected", { reason: "NOT_IN_AUCTION_ROOM" });
+      socket.emit("bid_rejected", { reason: "NOT_IN_ROOM" });
       return;
     }
 
@@ -135,6 +139,66 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
     io.to(room).emit("participant_count", { count: participantCount });
   });
 
+  socket.on("place_bid", async (rawPayload) => {
+    const ctx = getJoinedContext(socket);
+    if (!ctx) {
+      socket.emit("bid_rejected", { reason: "NOT_IN_ROOM" });
+      return;
+    }
+
+    const parsed = placeBidSchema.safeParse(rawPayload);
+    if (!parsed.success) {
+      socket.emit("bid_rejected", { reason: "INVALID_INPUT" });
+      return;
+    }
+    const { auctionId, amount, participantId } = parsed.data;
+
+    if (auctionId !== ctx.auctionId) {
+      socket.emit("bid_rejected", { reason: "NOT_IN_ROOM" });
+      return;
+    }
+
+    if (participantId !== ctx.participantId) {
+      socket.emit("bid_rejected", { reason: "NOT_IN_ROOM" });
+      return;
+    }
+
+    if (!canBid(socket.id)) {
+      socket.emit("bid_rejected", { reason: "RATE_LIMITED" });
+      return;
+    }
+
+    try {
+      const result = await placeBid({
+        auctionId,
+        bidderId: ctx.participantId,
+        bidderName: ctx.displayName,
+        amount,
+      });
+
+      const room = roomName(auctionId);
+
+      io.to(room).emit("new_bid", {
+        bidderName: result.bidderName,
+        amount: result.amount,
+        currentBid: result.currentBid,
+        currentBidder: result.currentBidder,
+        timestamp: result.timestamp,
+      });
+
+      if (result.newEndsAt) {
+        io.to(room).emit("timer_extended", { newEndsAt: result.newEndsAt });
+      }
+    } catch (err) {
+      if (err instanceof BidError) {
+        socket.emit("bid_rejected", { reason: err.reason });
+      } else {
+        console.error("Unexpected bid error:", err);
+        socket.emit("bid_rejected", { reason: "INTERNAL_ERROR" });
+      }
+    }
+  });
+
   socket.on("leave_auction", (rawPayload) => {
     const parsed = leaveAuctionSchema.safeParse(rawPayload);
     if (!parsed.success) return;
@@ -154,6 +218,8 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
   });
 
   socket.on("disconnect", () => {
+    clearRateLimit(socket.id);
+
     const auctionId = socket.data.auctionId;
     if (!auctionId) return;
     const room = roomName(auctionId);

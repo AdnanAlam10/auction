@@ -5,7 +5,9 @@ export const BID_REJECT_REASONS = [
   "SELF_BID",
   "RATE_LIMITED",
   "INVALID_AMOUNT",
+  "INVALID_INPUT",
   "NOT_IN_ROOM",
+  "INTERNAL_ERROR",
 ] as const;
 
 export type BidRejectReason = (typeof BID_REJECT_REASONS)[number];

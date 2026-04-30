@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../lib/socket";
 import { getParticipantId } from "../lib/participant";
-import type { AuctionStatePayload, NewBidPayload } from "../../../shared/socketEvents";
+import type {
+  AuctionStatePayload,
+  NewBidPayload,
+} from "../../../shared/socketEvents";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
@@ -70,12 +73,17 @@ export function useAuctionSocket({
       );
     };
 
+    const handleTimerExtended = ({ newEndsAt }: { newEndsAt: string }) => {
+      setAuction((prev) => (prev ? { ...prev, endsAt: newEndsAt } : prev));
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
     socket.on("auction_state", handleAuctionState);
     socket.on("participant_count", handleParticipantCount);
     socket.on("new_bid", handleNewBid);
+    socket.on("timer_extended", handleTimerExtended);
 
     if (socket.connected) {
       join();
@@ -90,6 +98,7 @@ export function useAuctionSocket({
       socket.off("auction_state", handleAuctionState);
       socket.off("participant_count", handleParticipantCount);
       socket.off("new_bid", handleNewBid);
+      socket.off("timer_extended", handleTimerExtended);
 
       if (joinedRef.current) {
         socket.emit("leave_auction", { auctionId });

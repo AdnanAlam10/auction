@@ -11,3 +11,9 @@ export const joinAuctionSchema = z.object({
 export const leaveAuctionSchema = z.object({
   auctionId: uuidSchema,
 });
+
+export const placeBidSchema = z.object({
+  auctionId: uuidSchema,
+  amount: z.number().int().positive(),
+  participantId: uuidSchema,
+});
