@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { useAuctionSocket } from "../hooks/useAuctionSocket";
 import { getDisplayName } from "../lib/participant";
 import { NamePrompt } from "../components/NamePrompt";
+import { BidForm } from "../components/BidForm";
+import { getParticipantId } from "../lib/participant";
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -32,7 +34,7 @@ function AuctionRoomContent({
   auctionId: string;
   displayName: string;
 }) {
-  const { auction, status, error } = useAuctionSocket({
+  const { auction, status, error, rejection, placeBid } = useAuctionSocket({
     auctionId,
     displayName,
   });
@@ -81,6 +83,18 @@ function AuctionRoomContent({
             : "No bids yet"}
         </div>
       </div>
+
+      {auction.status === "active" && (
+        <BidForm
+          currentBid={auction.currentBid}
+          minIncrement={auction.minIncrement}
+          currentBidderId={auction.currentBidderId}
+          participantId={getParticipantId()}
+          status={status}
+          rejection={rejection}
+          onBid={placeBid}
+        />
+      )}
 
       <div className="text-sm text-gray-500">
         Ends at: {new Date(auction.endsAt).toLocaleString()}

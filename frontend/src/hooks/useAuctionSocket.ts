@@ -17,6 +17,8 @@ interface UseAuctionSocketResult {
   auction: AuctionStatePayload | null;
   status: ConnectionStatus;
   error: string | null;
+  rejection: string | null;
+  placeBid: (amountCents: number) => void;
 }
 
 export function useAuctionSocket({
@@ -28,8 +30,18 @@ export function useAuctionSocket({
     socket.connected ? "connected" : "connecting",
   );
   const [error, setError] = useState<string | null>(null);
+  const [rejection, setRejection] = useState<string | null>(null);
 
   const joinedRef = useRef(false);
+
+  const placeBidFn = (amountCents: number) => {
+    setRejection(null);
+    socket.emit("place_bid", {
+      auctionId,
+      amount: amountCents,
+      participantId: getParticipantId(),
+    });
+  };
 
   useEffect(() => {
     if (!displayName) return;
@@ -77,6 +89,10 @@ export function useAuctionSocket({
       setAuction((prev) => (prev ? { ...prev, endsAt: newEndsAt } : prev));
     };
 
+    const handleBidRejected = ({ reason }: { reason: string }) => {
+      setRejection(reason);
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
@@ -84,6 +100,7 @@ export function useAuctionSocket({
     socket.on("participant_count", handleParticipantCount);
     socket.on("new_bid", handleNewBid);
     socket.on("timer_extended", handleTimerExtended);
+    socket.on("bid_rejected", handleBidRejected);
 
     if (socket.connected) {
       join();
@@ -99,6 +116,7 @@ export function useAuctionSocket({
       socket.off("participant_count", handleParticipantCount);
       socket.off("new_bid", handleNewBid);
       socket.off("timer_extended", handleTimerExtended);
+      socket.off("bid_rejected", handleBidRejected);
 
       if (joinedRef.current) {
         socket.emit("leave_auction", { auctionId });
@@ -107,5 +125,5 @@ export function useAuctionSocket({
     };
   }, [auctionId, displayName]);
 
-  return { auction, status, error };
+  return { auction, status, error, rejection, placeBid: placeBidFn };
 }
