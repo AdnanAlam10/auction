@@ -169,12 +169,15 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
     }
 
     try {
-      const result = await placeBid({
-        auctionId,
-        bidderId: ctx.participantId,
-        bidderName: ctx.displayName,
-        amount,
-      });
+      const result = await placeBid(
+        {
+          auctionId,
+          bidderId: ctx.participantId,
+          bidderName: ctx.displayName,
+          amount,
+        },
+        prisma,
+      );
 
       const room = roomName(auctionId);
 

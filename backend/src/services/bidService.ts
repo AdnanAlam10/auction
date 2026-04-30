@@ -1,5 +1,6 @@
-import { prisma } from "../lib/prisma.js";
+import { prisma as defaultPrisma } from "../lib/prisma.js";
 import { BidError } from "./bidError.js";
+import type { PrismaClient } from "@prisma/client";
 
 const ANTI_SNIPE_THRESHOLD_MS = 30_000; // 30 seconds
 const ANTI_SNIPE_EXTENSION_MS = 30_000;
@@ -31,14 +32,17 @@ interface AuctionRow {
   min_increment: number;
 }
 
-export async function placeBid(args: PlaceBidArgs): Promise<PlaceBidResult> {
+export async function placeBid(
+  args: PlaceBidArgs,
+  db: PrismaClient,
+): Promise<PlaceBidResult> {
   const { auctionId, bidderId, bidderName, amount } = args;
 
   if (!Number.isInteger(amount) || amount <= 0) {
     throw new BidError("INVALID_AMOUNT");
   }
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx) => {
     // Step 1: Lock the auction row.
     // This is raw SQL because Prisma doesn't expose SELECT FOR UPDATE.
     // Every other transaction trying to lock this row will WAIT here

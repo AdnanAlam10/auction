@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc",
-    "start": "node dist/backend/src/index.js"
+    "start": "node dist/backend/src/index.js",
+    "test": "vitest run",
+    "db:push:test": "cross-env DATABASE_URL=postgresql://auction:auction@localhost:5434/auction_test npx prisma db push"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +27,8 @@
     "@types/node": "^25.6.0",
     "prisma": "^6.19.3",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.5"
   },
   "engines": {
     "node": "20.x"
