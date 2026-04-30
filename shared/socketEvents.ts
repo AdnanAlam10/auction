@@ -1,7 +1,19 @@
+export const BID_REJECT_REASONS = [
+  "BID_TOO_LOW",
+  "AUCTION_NOT_ACTIVE",
+  "AUCTION_ENDED",
+  "SELF_BID",
+  "RATE_LIMITED",
+  "INVALID_AMOUNT",
+  "NOT_IN_ROOM",
+] as const;
+
+export type BidRejectReason = (typeof BID_REJECT_REASONS)[number];
+
 export interface ServerToClientEvents {
   auction_state: (payload: AuctionStatePayload) => void;
   new_bid: (payload: NewBidPayload) => void;
-  bid_rejected: (payload: { reason: string }) => void;
+  bid_rejected: (payload: { reason: BidRejectReason }) => void;
   participant_count: (payload: { count: number }) => void;
   timer_extended: (payload: { newEndsAt: string }) => void;
   auction_ended: (payload: {
