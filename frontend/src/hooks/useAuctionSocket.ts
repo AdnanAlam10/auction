@@ -79,10 +79,28 @@ export function useAuctionSocket({
       );
     };
 
-    const handleNewBid = ({ currentBid, currentBidder }: NewBidPayload) => {
-      setAuction((prev) =>
-        prev ? { ...prev, currentBid, currentBidder } : prev,
-      );
+    const handleNewBid = ({
+      currentBid,
+      currentBidder,
+      bidderName,
+      amount,
+      timestamp,
+    }: NewBidPayload) => {
+      setAuction((prev) => {
+        if (!prev) return prev;
+        const newBid = {
+          id: crypto.randomUUID(),
+          bidderName,
+          amount,
+          createdAt: timestamp,
+        };
+        return {
+          ...prev,
+          currentBid,
+          currentBidder,
+          recentBids: [newBid, ...prev.recentBids].slice(0, 10),
+        };
+      });
     };
 
     const handleTimerExtended = ({ newEndsAt }: { newEndsAt: string }) => {

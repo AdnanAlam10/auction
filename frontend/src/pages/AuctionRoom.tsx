@@ -5,6 +5,8 @@ import { getDisplayName } from "../lib/participant";
 import { NamePrompt } from "../components/NamePrompt";
 import { BidForm } from "../components/BidForm";
 import { getParticipantId } from "../lib/participant";
+import { Countdown } from "../components/Countdown";
+import { RecentBids } from "../components/RecentBids";
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -96,6 +98,15 @@ function AuctionRoomContent({
         />
       )}
 
+      <RecentBids bids={auction.recentBids} />
+
+      {auction.status === "active" && (
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <span>Time remaining:</span>
+          <Countdown endsAt={auction.endsAt} />
+        </div>
+      )}
+
       {auction.status === "ended" && (
         <div className="border rounded p-4 mb-4 bg-gray-50">
           <div className="text-lg font-semibold">Auction ended</div>
@@ -110,9 +121,6 @@ function AuctionRoomContent({
         </div>
       )}
 
-      <div className="text-sm text-gray-500">
-        Ends at: {new Date(auction.endsAt).toLocaleString()}
-      </div>
       <div className="text-xs text-gray-400 mt-1">
         Status: {auction.status} · You: {displayName} · Connection: {status}
       </div>
