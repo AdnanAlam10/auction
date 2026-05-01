@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuctionSocket } from "../hooks/useAuctionSocket";
-import { getDisplayName } from "../lib/participant";
+import { getDisplayName, getParticipantId } from "../lib/participant";
 import { NamePrompt } from "../components/NamePrompt";
 import { BidForm } from "../components/BidForm";
-import { getParticipantId } from "../lib/participant";
-import { Countdown } from "../components/Countdown";
 import { RecentBids } from "../components/RecentBids";
+import { Countdown } from "../components/Countdown";
+import { ConnectionStatus } from "../components/ConnectionStatus";
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -19,7 +19,11 @@ export function AuctionRoom() {
   );
 
   if (!id) {
-    return <div className="p-8 text-red-600">Missing auction id</div>;
+    return (
+      <div className="max-w-2xl mx-auto p-8 text-red-600">
+        Missing auction id
+      </div>
+    );
   }
 
   if (!displayName) {
@@ -41,79 +45,82 @@ function AuctionRoomContent({
     displayName,
   });
 
-  if (status === "connecting" && !auction) {
-    return <div className="p-8 text-gray-500">Connecting…</div>;
-  }
-
   if (error && !auction) {
-    return <div className="p-8 text-red-600">Connection error: {error}</div>;
+    return (
+      <div className="max-w-2xl mx-auto p-8">
+        <p className="text-red-600">Connection error: {error}</p>
+      </div>
+    );
   }
 
   if (!auction) {
-    return <div className="p-8 text-gray-500">Loading auction…</div>;
+    return (
+      <div className="max-w-2xl mx-auto p-8 text-gray-400">
+        Loading auction…
+      </div>
+    );
   }
+
+  const isEnded = auction.status === "ended";
+  const participantId = getParticipantId();
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <div className="flex items-start justify-between mb-4">
-        <h1 className="text-2xl font-semibold">{auction.title}</h1>
-        <span className="text-sm text-gray-500">
+      <ConnectionStatus status={status} />
+
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{auction.title}</h1>
+          {auction.description && (
+            <p className="text-gray-600 mt-1">{auction.description}</p>
+          )}
+        </div>
+        <span className="text-sm text-gray-400 whitespace-nowrap ml-4">
           {auction.participantCount} watching
         </span>
       </div>
-
-      {auction.description && (
-        <p className="text-gray-700 mb-4">{auction.description}</p>
-      )}
 
       {auction.imageUrl && (
         <img
           src={auction.imageUrl}
           alt=""
-          className="w-full max-h-96 object-cover rounded mb-4"
+          className="w-full max-h-80 object-cover rounded-lg mb-6"
         />
       )}
 
-      <div className="border rounded p-4 mb-4">
-        <div className="text-sm text-gray-500">Current bid</div>
-        <div className="text-3xl font-semibold">
-          {formatCents(auction.currentBid)}
-        </div>
-        <div className="text-sm text-gray-600 mt-1">
-          {auction.currentBidder
-            ? `by ${auction.currentBidder}`
-            : "No bids yet"}
+      <div className="border rounded-lg p-5 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-gray-500">
+              {isEnded ? "Final price" : "Current bid"}
+            </div>
+            <div className="text-3xl font-semibold mt-1">
+              {formatCents(auction.currentBid)}
+            </div>
+            <div className="text-sm text-gray-500 mt-1">
+              {auction.currentBidder
+                ? `by ${auction.currentBidder}`
+                : "No bids yet"}
+            </div>
+          </div>
+          {!isEnded && (
+            <div className="text-right">
+              <div className="text-sm text-gray-500">Time remaining</div>
+              <div className="mt-1">
+                <Countdown endsAt={auction.endsAt} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {auction.status === "active" && (
-        <BidForm
-          currentBid={auction.currentBid}
-          minIncrement={auction.minIncrement}
-          currentBidderId={auction.currentBidderId}
-          participantId={getParticipantId()}
-          status={status}
-          rejection={rejection}
-          onBid={placeBid}
-        />
-      )}
-
-      <RecentBids bids={auction.recentBids} />
-
-      {auction.status === "active" && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <span>Time remaining:</span>
-          <Countdown endsAt={auction.endsAt} />
-        </div>
-      )}
-
-      {auction.status === "ended" && (
-        <div className="border rounded p-4 mb-4 bg-gray-50">
+      {isEnded && (
+        <div className="rounded-lg p-5 mb-4 bg-gray-50 border">
           <div className="text-lg font-semibold">Auction ended</div>
-          {auction.winnerName && auction.winnerAmount != null ? (
+          {auction.winnerName ? (
             <p className="mt-1">
-              Won by {auction.winnerName} for $
-              {(auction.winnerAmount / 100).toFixed(2)}
+              Won by <span className="font-medium">{auction.winnerName}</span>{" "}
+              for {formatCents(auction.winnerAmount!)}
             </p>
           ) : (
             <p className="mt-1 text-gray-500">No bids were placed</p>
@@ -121,9 +128,23 @@ function AuctionRoomContent({
         </div>
       )}
 
-      <div className="text-xs text-gray-400 mt-1">
-        Status: {auction.status} · You: {displayName} · Connection: {status}
-      </div>
+      {auction.status === "active" && (
+        <div className="mb-4">
+          <BidForm
+            currentBid={auction.currentBid}
+            minIncrement={auction.minIncrement}
+            currentBidderId={auction.currentBidderId}
+            participantId={participantId}
+            status={status}
+            rejection={rejection}
+            onBid={placeBid}
+          />
+        </div>
+      )}
+
+      <RecentBids bids={auction.recentBids} />
+
+      <div className="text-xs text-gray-400 mt-6">Joined as {displayName}</div>
     </div>
   );
 }

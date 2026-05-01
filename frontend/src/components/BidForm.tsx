@@ -36,7 +36,8 @@ export function BidForm({
   onBid,
 }: BidFormProps) {
   const minimumBid = currentBid + minIncrement;
-  const [inputValue, setInputValue] = useState(formatCents(minimumBid));
+  const [editedValue, setEditedValue] = useState<string | null>(null);
+  const inputValue = editedValue ?? formatCents(minimumBid);
   const isHighBidder = currentBidderId === participantId;
 
   const handleSubmit = () => {
@@ -44,6 +45,7 @@ export function BidForm({
     if (!Number.isFinite(dollars) || dollars <= 0) return;
     const cents = Math.round(dollars * 100);
     onBid(cents);
+    setEditedValue(null);
   };
 
   return (
@@ -58,7 +60,7 @@ export function BidForm({
             step="0.01"
             min={formatCents(minimumBid)}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => setEditedValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             className="w-full pl-7 pr-3 py-2 border rounded"
           />

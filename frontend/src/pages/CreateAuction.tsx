@@ -52,7 +52,10 @@ export function CreateAuction() {
 
   return (
     <div className="max-w-lg mx-auto p-8">
-      <h1 className="text-2xl font-semibold mb-6">Create an auction</h1>
+      <h1 className="text-2xl font-semibold mb-2">Create an auction</h1>
+      <p className="text-gray-500 text-sm mb-6">
+        Set up a live auction. Share the link to invite bidders.
+      </p>
 
       <div className="space-y-4">
         <div>
