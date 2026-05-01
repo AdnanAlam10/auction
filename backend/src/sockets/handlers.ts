@@ -10,6 +10,7 @@ import { canBid, clearRateLimit } from "./rateLimit.js";
 import { placeBid } from "../services/bidService.js";
 import { BidError } from "../services/bidError.js";
 import { placeBidSchema } from "./validation.js";
+import { reschedule } from "../services/auctionTimers.js";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
 type ClientSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -191,6 +192,7 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
 
       if (result.newEndsAt) {
         io.to(room).emit("timer_extended", { newEndsAt: result.newEndsAt });
+        reschedule(auctionId, new Date(result.newEndsAt), io);
       }
     } catch (err) {
       if (err instanceof BidError) {

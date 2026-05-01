@@ -96,6 +96,20 @@ function AuctionRoomContent({
         />
       )}
 
+      {auction.status === "ended" && (
+        <div className="border rounded p-4 mb-4 bg-gray-50">
+          <div className="text-lg font-semibold">Auction ended</div>
+          {auction.winnerName && auction.winnerAmount != null ? (
+            <p className="mt-1">
+              Won by {auction.winnerName} for $
+              {(auction.winnerAmount / 100).toFixed(2)}
+            </p>
+          ) : (
+            <p className="mt-1 text-gray-500">No bids were placed</p>
+          )}
+        </div>
+      )}
+
       <div className="text-sm text-gray-500">
         Ends at: {new Date(auction.endsAt).toLocaleString()}
       </div>

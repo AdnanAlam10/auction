@@ -93,6 +93,18 @@ export function useAuctionSocket({
       setRejection(reason);
     };
 
+    const handleAuctionEnded = ({
+      winnerName,
+      winnerAmount,
+    }: {
+      winnerName: string | null;
+      winnerAmount: number | null;
+    }) => {
+      setAuction((prev) =>
+        prev ? { ...prev, status: "ended", winnerName, winnerAmount } : prev,
+      );
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
@@ -101,6 +113,7 @@ export function useAuctionSocket({
     socket.on("new_bid", handleNewBid);
     socket.on("timer_extended", handleTimerExtended);
     socket.on("bid_rejected", handleBidRejected);
+    socket.on("auction_ended", handleAuctionEnded);
 
     if (socket.connected) {
       join();
@@ -117,6 +130,7 @@ export function useAuctionSocket({
       socket.off("new_bid", handleNewBid);
       socket.off("timer_extended", handleTimerExtended);
       socket.off("bid_rejected", handleBidRejected);
+      socket.off("auction_ended", handleAuctionEnded);
 
       if (joinedRef.current) {
         socket.emit("leave_auction", { auctionId });
