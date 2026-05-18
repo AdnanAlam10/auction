@@ -18,6 +18,7 @@ interface UseAuctionSocketResult {
   status: ConnectionStatus;
   error: string | null;
   rejection: string | null;
+  extendedTick: number;
   placeBid: (amountCents: number) => void;
 }
 
@@ -31,6 +32,7 @@ export function useAuctionSocket({
   );
   const [error, setError] = useState<string | null>(null);
   const [rejection, setRejection] = useState<string | null>(null);
+  const [extendedTick, setExtendedTick] = useState(0);
 
   const joinedRef = useRef(false);
 
@@ -105,6 +107,7 @@ export function useAuctionSocket({
 
     const handleTimerExtended = ({ newEndsAt }: { newEndsAt: string }) => {
       setAuction((prev) => (prev ? { ...prev, endsAt: newEndsAt } : prev));
+      setExtendedTick((t) => t + 1);
     };
 
     const handleBidRejected = ({ reason }: { reason: string }) => {
@@ -157,5 +160,12 @@ export function useAuctionSocket({
     };
   }, [auctionId, displayName]);
 
-  return { auction, status, error, rejection, placeBid: placeBidFn };
+  return {
+    auction,
+    status,
+    error,
+    rejection,
+    extendedTick,
+    placeBid: placeBidFn,
+  };
 }

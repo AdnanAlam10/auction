@@ -1,3 +1,130 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --ink: #14110d;
+  --paper: #efe9dd;
+  --paper-2: #e3dccb;
+  --paper-3: #d7cfba;
+  --paper-warm: #edd9c0;
+  --vermillion: #c73e17;
+  --grain: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0 0.05 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+html,
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02", "cv11";
+  font-variation-settings: "wght" 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-image: var(--grain);
+  background-size: 220px 220px;
+  min-height: 100vh;
+  transition: background-color 700ms ease;
+}
+
+/* Urgency states pushed to the body so the whole page warms */
+body[data-urgency="warning"] {
+  background-color: var(--paper-warm);
+}
+body[data-urgency="critical"] {
+  background-color: #e9bfa6;
+}
+
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 30;
+}
+.font-display-tight {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 0;
+}
+.font-display-soft {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 100;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Strip default number input arrows for cleaner typography */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Custom selection */
+::selection {
+  background-color: var(--ink);
+  color: var(--paper);
+}
+
+/* A horizontal rule that feels like newspaper print */
+.rule {
+  border-bottom: 2px solid var(--ink);
+}
+.rule-thin {
+  border-bottom: 1px solid var(--ink);
+}
+.rule-dashed {
+  border-bottom: 1px dashed rgba(20, 17, 13, 0.35);
+}
+
+/* Layered border block (catalog card) */
+.lot-card {
+  background-color: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 0 var(--ink);
+}
+
+/* Subtle staggered intro */
+.intro > * {
+  opacity: 0;
+  animation: introIn 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.intro > *:nth-child(1) {
+  animation-delay: 40ms;
+}
+.intro > *:nth-child(2) {
+  animation-delay: 120ms;
+}
+.intro > *:nth-child(3) {
+  animation-delay: 200ms;
+}
+.intro > *:nth-child(4) {
+  animation-delay: 280ms;
+}
+.intro > *:nth-child(5) {
+  animation-delay: 360ms;
+}
+.intro > *:nth-child(6) {
+  animation-delay: 440ms;
+}
+@keyframes introIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
