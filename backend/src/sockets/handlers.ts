@@ -1,6 +1,10 @@
 import type { Server, Socket } from "socket.io";
 import { prisma } from "../lib/prisma.js";
-import { joinAuctionSchema, leaveAuctionSchema } from "./validation.js";
+import {
+  joinAuctionSchema,
+  leaveAuctionSchema,
+  placeBidSchema,
+} from "./validation.js";
 import type {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -9,7 +13,6 @@ import type {
 import { canBid, clearRateLimit } from "./rateLimit.js";
 import { placeBid } from "../services/bidService.js";
 import { BidError } from "../services/bidError.js";
-import { placeBidSchema } from "./validation.js";
 import { reschedule } from "../services/auctionTimers.js";
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>;
@@ -45,6 +48,14 @@ function roomName(auctionId: string): string {
 
 function countInRoom(io: IO, room: string): number {
   return io.sockets.adapter.rooms.get(room)?.size ?? 0;
+}
+
+// Socket.io updates room membership asynchronously after leave/disconnect,
+// so we defer the count read by a tick to let the adapter settle.
+function broadcastParticipantCount(io: IO, room: string): void {
+  setTimeout(() => {
+    io.to(room).emit("participant_count", { count: countInRoom(io, room) });
+  }, 100);
 }
 
 export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
@@ -97,10 +108,7 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
     if (previousCtx && previousCtx.auctionId !== auctionId) {
       const previousRoom = roomName(previousCtx.auctionId);
       await socket.leave(previousRoom);
-      setTimeout(() => {
-        const count = countInRoom(io, previousRoom);
-        io.to(previousRoom).emit("participant_count", { count });
-      }, 100);
+      broadcastParticipantCount(io, previousRoom);
     }
 
     const room = roomName(auctionId);
@@ -216,10 +224,7 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
     socket.leave(room);
     socket.data.auctionId = undefined;
 
-    setTimeout(() => {
-      const count = countInRoom(io, room);
-      io.to(room).emit("participant_count", { count });
-    }, 100);
+    broadcastParticipantCount(io, room);
   });
 
   socket.on("disconnect", () => {
@@ -227,11 +232,6 @@ export function registerAuctionHandlers(io: IO, socket: ClientSocket): void {
 
     const auctionId = socket.data.auctionId;
     if (!auctionId) return;
-    const room = roomName(auctionId);
-
-    setTimeout(() => {
-      const count = countInRoom(io, room);
-      io.to(room).emit("participant_count", { count });
-    }, 100);
+    broadcastParticipantCount(io, roomName(auctionId));
   });
 }

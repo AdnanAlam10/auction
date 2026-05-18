@@ -1,14 +1,8 @@
 import type { RecentBid } from "@shared/socketEvents";
+import { formatCurrency } from "../lib/format";
 
 interface RecentBidsProps {
   bids: RecentBid[];
-}
-
-function formatCents(cents: number): string {
-  return (cents / 100).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
 }
 
 function timeAgo(iso: string): string {
@@ -55,7 +49,7 @@ export function RecentBids({ bids }: RecentBidsProps) {
                 {bid.bidderName}
               </span>
               <span className="font-mono tabular text-base">
-                {formatCents(bid.amount)}
+                {formatCurrency(bid.amount)}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-widest2 text-ink-muted text-right tabular">
                 {timeAgo(bid.createdAt)}

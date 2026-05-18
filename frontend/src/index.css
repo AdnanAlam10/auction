@@ -30,7 +30,6 @@ body {
   transition: background-color 700ms ease;
 }
 
-/* Urgency states pushed to the body so the whole page warms */
 body[data-urgency="warning"] {
   background-color: var(--paper-warm);
 }
@@ -61,7 +60,6 @@ body[data-urgency="critical"] {
   font-variant-numeric: tabular-nums;
 }
 
-/* Strip default number input arrows for cleaner typography */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -71,13 +69,11 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Custom selection */
 ::selection {
   background-color: var(--ink);
   color: var(--paper);
 }
 
-/* A horizontal rule that feels like newspaper print */
 .rule {
   border-bottom: 2px solid var(--ink);
 }
@@ -88,14 +84,12 @@ input[type="number"] {
   border-bottom: 1px dashed rgba(20, 17, 13, 0.35);
 }
 
-/* Layered border block (catalog card) */
 .lot-card {
   background-color: var(--paper);
   border: 2px solid var(--ink);
   box-shadow: 6px 6px 0 0 var(--ink);
 }
 
-/* Subtle staggered intro */
 .intro > * {
   opacity: 0;
   animation: introIn 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;

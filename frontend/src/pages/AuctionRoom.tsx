@@ -7,15 +7,7 @@ import { BidForm } from "../components/BidForm";
 import { RecentBids } from "../components/RecentBids";
 import { Countdown } from "../components/Countdown";
 import { ConnectionStatus } from "../components/ConnectionStatus";
-
-function formatCents(cents: number): string {
-  const dollars = cents / 100;
-  return dollars.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  });
-}
+import { formatCurrency } from "../lib/format";
 
 function shortLot(id: string): string {
   return id.replace(/-/g, "").slice(0, 4).toUpperCase();
@@ -74,7 +66,6 @@ function AuctionRoomContent({
     return () => clearTimeout(t);
   }, [extendedTick]);
 
-  // Push urgency to <body> so the whole page warms.
   useEffect(() => {
     if (!auction || auction.status !== "active") {
       document.body.dataset.urgency = "normal";
@@ -136,7 +127,6 @@ function AuctionRoomContent({
     <div className="min-h-screen">
       <ConnectionStatus status={status} />
 
-      {/* Extension flash overlay */}
       {extensionFlash > 0 && (
         <div
           key={extensionFlash}
@@ -153,7 +143,6 @@ function AuctionRoomContent({
         </div>
       )}
 
-      {/* Top strip */}
       <header className="border-b-2 border-ink">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
           <div className="flex items-baseline gap-4">
@@ -186,7 +175,6 @@ function AuctionRoomContent({
         </div>
       </header>
 
-      {/* Hero / lot info */}
       <section className="border-b-2 border-ink">
         <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-12 gap-8 intro">
           <div className="col-span-12 md:col-span-7">
@@ -249,18 +237,16 @@ function AuctionRoomContent({
         </div>
       </section>
 
-      {/* Bid panel */}
       <section className="border-b-2 border-ink">
         <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-12 gap-8">
-          {/* Current bid */}
           <div className="col-span-12 md:col-span-7">
             <div className="flex items-center justify-between mb-4">
               <span className="font-mono text-[10px] uppercase tracking-widest2 text-ink-muted">
                 {isEnded ? "Hammer price" : "Standing bid"}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-widest2 text-ink-muted">
-                opened at {formatCents(auction.startingBid)} · increment{" "}
-                {formatCents(auction.minIncrement)}
+                opened at {formatCurrency(auction.startingBid)} · increment{" "}
+                {formatCurrency(auction.minIncrement)}
               </span>
             </div>
 
@@ -268,7 +254,7 @@ function AuctionRoomContent({
               key={auction.currentBid}
               className="font-display text-[6.5rem] md:text-[9rem] leading-[0.88] tracking-tight tabular animate-bid-pop"
             >
-              {formatCents(auction.currentBid)}
+              {formatCurrency(auction.currentBid)}
             </div>
 
             <div className="mt-4 flex items-baseline gap-3">
@@ -281,7 +267,6 @@ function AuctionRoomContent({
             </div>
           </div>
 
-          {/* Countdown */}
           <div className="col-span-12 md:col-span-5 md:border-l-2 md:border-ink md:pl-8">
             <div className="flex items-center justify-between mb-4">
               <span className="font-mono text-[10px] uppercase tracking-widest2 text-ink-muted">
@@ -323,7 +308,6 @@ function AuctionRoomContent({
         </div>
       </section>
 
-      {/* Bid form & ledger */}
       <section>
         <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-12 gap-8">
           <div className="col-span-12 md:col-span-7">
@@ -397,12 +381,7 @@ function EndedBanner({
               at
             </p>
             <p className="font-display text-6xl tabular tracking-tight">
-              {winnerAmount !== null
-                ? (winnerAmount / 100).toLocaleString("en-US", {
-                    style: "currency",
-                    currency: "USD",
-                  })
-                : "—"}
+              {winnerAmount !== null ? formatCurrency(winnerAmount) : "—"}
             </p>
           </>
         ) : (

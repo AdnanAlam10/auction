@@ -76,7 +76,6 @@ export function CreateAuction() {
 
       <main className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid grid-cols-12 gap-8 intro">
-          {/* Title block */}
           <div className="col-span-12 md:col-span-7">
             <span className="font-mono text-xs uppercase tracking-widest2 text-vermillion">
               Folio №— · draft
@@ -92,7 +91,6 @@ export function CreateAuction() {
             </p>
           </div>
 
-          {/* Side note */}
           <aside className="col-span-12 md:col-span-5 md:pl-8 md:border-l-2 md:border-ink">
             <p className="font-mono text-[11px] uppercase tracking-widest2 text-ink-muted mb-3">
               Notes from the rostrum

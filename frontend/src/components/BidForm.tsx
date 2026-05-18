@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDollars } from "../lib/format";
 
 interface BidFormProps {
   currentBid: number;
@@ -22,10 +23,6 @@ const REJECTION_MESSAGES: Record<string, string> = {
   INTERNAL_ERROR: "Server hiccup. Try once more.",
 };
 
-function formatCents(cents: number): string {
-  return (cents / 100).toFixed(2);
-}
-
 export function BidForm({
   currentBid,
   minIncrement,
@@ -37,7 +34,7 @@ export function BidForm({
 }: BidFormProps) {
   const minimumBid = currentBid + minIncrement;
   const [editedValue, setEditedValue] = useState<string | null>(null);
-  const inputValue = editedValue ?? formatCents(minimumBid);
+  const inputValue = editedValue ?? formatDollars(minimumBid);
   const isHighBidder = currentBidderId === participantId;
   const disabled = isHighBidder || status !== "connected";
 
@@ -54,7 +51,7 @@ export function BidForm({
       minimumBid,
       Math.round(parseFloat(inputValue) * 100) + delta,
     );
-    setEditedValue(formatCents(next));
+    setEditedValue(formatDollars(next));
   };
 
   return (
@@ -64,7 +61,7 @@ export function BidForm({
           Submit a bid
         </span>
         <span className="font-mono text-[10px] uppercase tracking-widest2 text-ink-muted">
-          min · ${formatCents(minimumBid)}
+          min · ${formatDollars(minimumBid)}
         </span>
       </div>
 
@@ -76,7 +73,7 @@ export function BidForm({
           <input
             type="number"
             step="0.01"
-            min={formatCents(minimumBid)}
+            min={formatDollars(minimumBid)}
             value={inputValue}
             onChange={(e) => setEditedValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}

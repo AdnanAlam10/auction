@@ -32,10 +32,6 @@ export default {
         widest2: "0.25em",
       },
       keyframes: {
-        "paper-warm": {
-          "0%, 100%": { backgroundColor: "#EFE9DD" },
-          "50%": { backgroundColor: "#EDD9C0" },
-        },
         "extended-flash": {
           "0%": { opacity: "0" },
           "10%": { opacity: "1" },
@@ -54,17 +50,12 @@ export default {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.04)" },
         },
-        marquee: {
-          "0%": { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-50%)" },
-        },
       },
       animation: {
         "extended-flash": "extended-flash 900ms ease-out forwards",
         "bid-pop": "bid-pop 350ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
         "live-pulse": "live-pulse 1.6s ease-in-out infinite",
         "tick-pulse": "tick-pulse 1s ease-in-out infinite",
-        marquee: "marquee 40s linear infinite",
       },
     },
   },
